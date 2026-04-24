@@ -35,6 +35,7 @@ Keep it under 120 words.
 Write in a direct and personal tone.
 Avoid repeating ideas.
 Make it feel like guidance, not an essay.
+End with one simple, actionable takeaway.
 Do not claim certainty.
 `;
 
