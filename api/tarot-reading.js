@@ -3,9 +3,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -18,6 +16,28 @@ export default async function handler(req, res) {
   }
 
   try {
+    const prompt = `
+You are a calm and insightful tarot reader.
+
+Use the provided card meaning as the foundation.
+
+User question:
+${question}
+
+Cards drawn:
+${cards.map(c => `${c.name} (${c.orientation || 'Upright'})`).join(', ')}
+
+Card meaning:
+${cards.map(c => c.meaning || '').join('\n')}
+
+Provide a short, clear, grounded response.
+Keep it under 120 words.
+Write in a direct and personal tone.
+Avoid repeating ideas.
+Make it feel like guidance, not an essay.
+Do not claim certainty.
+`;
+
     const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: {
@@ -26,33 +46,13 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'gpt-4.1-mini',
-        input: `
-You are a calm and insightful tarot reader.
-
-User question:
-${question}
-
-Cards drawn:
-${cards
-  .map(
-    (c) =>
-      `${c.name} - ${c.position || 'Card'} - ${c.orientation || 'Upright'}\nMeaning: ${c.meaning || ''}`
-  )
-  .join('\n\n')}
-
-Provide a thoughtful, grounded, and supportive tarot reading.
-Do not claim certainty.
-Keep it reflective, practical, and easy to understand.
-        `,
-      }),
-    });
+        input: prompt,
       }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('OpenAI error:', data);
       return res.status(500).json({ error: 'OpenAI request failed', details: data });
     }
 
@@ -64,7 +64,6 @@ Keep it reflective, practical, and easy to understand.
 
     return res.status(200).json({ reading });
   } catch (error) {
-    console.error('Tarot API error:', error);
     return res.status(500).json({ error: 'Something went wrong' });
   }
 }
