@@ -46,6 +46,8 @@ Keep it reflective, practical, and easy to understand.
         `,
       }),
     });
+      }),
+    });
 
     const data = await response.json();
 
